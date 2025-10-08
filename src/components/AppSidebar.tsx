@@ -10,11 +10,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Users, Building2 } from "lucide-react";
+import { LayoutDashboard, Users, Building2, TrendingUp, TrendingDown } from "lucide-react";
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Users", url: "/users", icon: Users },
+  { title: "Deposits", url: "/deposits", icon: TrendingUp },
+  { title: "Withdrawals", url: "/withdrawals", icon: TrendingDown },
 ];
 
 export function AppSidebar() {
