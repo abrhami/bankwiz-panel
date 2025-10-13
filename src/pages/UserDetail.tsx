@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Plus, Minus } from "lucide-react";
 import { TransactionDialog } from "@/components/TransactionDialog";
 
@@ -71,10 +72,16 @@ const UserDetail = () => {
           </Button>
         </Link>
         <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">{user.name}</h1>
-            <p className="text-muted-foreground">{user.email}</p>
-            <p className="text-sm text-muted-foreground mt-1">Account: {user.accountNumber}</p>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
+              <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">{user.name}</h1>
+              <p className="text-muted-foreground">{user.email}</p>
+              <p className="text-sm text-muted-foreground mt-1">Account: {user.accountNumber}</p>
+            </div>
           </div>
           <div className="flex gap-2">
             <Button 
