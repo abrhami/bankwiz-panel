@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Undo2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Search, Undo2, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -57,6 +59,7 @@ const mockDeposits: Deposit[] = [
 const Deposits = () => {
   const [deposits, setDeposits] = useState<Deposit[]>(mockDeposits);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDeposit, setSelectedDeposit] = useState<Deposit | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -122,21 +125,31 @@ const Deposits = () => {
                       <p><span className="text-muted-foreground">Description:</span> {deposit.description}</p>
                       <p><span className="text-muted-foreground">Date:</span> {deposit.date}</p>
                     </div>
-                    {deposit.reversed ? (
-                      <div className="mt-3 pt-3 border-t border-border">
-                        <span className="text-xs text-destructive font-medium">REVERSED</span>
-                      </div>
-                    ) : (
-                      <div className="mt-3 pt-3 border-t border-border">
+                    <div className="mt-3 pt-3 border-t border-border flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setSelectedDeposit(deposit)}
+                        className="flex-1 gap-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </Button>
+                      {!deposit.reversed && (
                         <Button 
                           variant="outline" 
                           size="sm" 
                           onClick={() => handleReverse(deposit.id)}
-                          className="w-full gap-2"
+                          className="flex-1 gap-2"
                         >
                           <Undo2 className="h-4 w-4" />
                           Reverse
                         </Button>
+                      )}
+                    </div>
+                    {deposit.reversed && (
+                      <div className="mt-2">
+                        <span className="text-xs text-destructive font-medium">REVERSED</span>
                       </div>
                     )}
                   </CardContent>
@@ -174,18 +187,30 @@ const Deposits = () => {
                       </td>
                       <td className="py-4 px-4 text-center text-sm">{deposit.date}</td>
                       <td className="py-4 px-4 text-center">
-                        {deposit.reversed ? (
-                          <span className="text-xs text-destructive font-medium">REVERSED</span>
-                        ) : (
+                        <div className="flex gap-2 justify-center">
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => handleReverse(deposit.id)}
+                            onClick={() => setSelectedDeposit(deposit)}
                             className="gap-2"
                           >
-                            <Undo2 className="h-4 w-4" />
-                            Reverse
+                            <Eye className="h-4 w-4" />
+                            View
                           </Button>
+                          {!deposit.reversed && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleReverse(deposit.id)}
+                              className="gap-2"
+                            >
+                              <Undo2 className="h-4 w-4" />
+                              Reverse
+                            </Button>
+                          )}
+                        </div>
+                        {deposit.reversed && (
+                          <span className="text-xs text-destructive font-medium block mt-1">REVERSED</span>
                         )}
                       </td>
                     </tr>
@@ -196,6 +221,54 @@ const Deposits = () => {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!selectedDeposit} onOpenChange={() => setSelectedDeposit(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Deposit Details</DialogTitle>
+          </DialogHeader>
+          {selectedDeposit && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">User</p>
+                  <p className="font-medium">{selectedDeposit.userName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Account Number</p>
+                  <p className="font-medium">{selectedDeposit.accountNumber}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Amount</p>
+                  <p className="font-medium text-lg text-success">+${selectedDeposit.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Bank</p>
+                  <p className="font-medium">{selectedDeposit.bank}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Date</p>
+                  <p className="font-medium">{selectedDeposit.date}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  {selectedDeposit.reversed ? (
+                    <Badge variant="destructive">Reversed</Badge>
+                  ) : (
+                    <Badge variant="default">Active</Badge>
+                  )}
+                </div>
+              </div>
+              {selectedDeposit.description && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Description</p>
+                  <p className="font-medium">{selectedDeposit.description}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
