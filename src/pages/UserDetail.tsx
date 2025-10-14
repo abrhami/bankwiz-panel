@@ -63,54 +63,56 @@ const UserDetail = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
+    <div className="p-4 md:p-8">
+      <div className="mb-4 md:mb-6">
         <Link to="/users">
           <Button variant="ghost" className="gap-2 mb-4">
             <ArrowLeft className="h-4 w-4" />
             Back to Users
           </Button>
         </Link>
-        <div className="flex justify-between items-start">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
+        <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-start">
+          <div className="flex items-center gap-3 md:gap-4">
+            <Avatar className="h-16 w-16 md:h-20 md:w-20">
               <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
               <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">{user.name}</h1>
-              <p className="text-muted-foreground">{user.email}</p>
-              <p className="text-sm text-muted-foreground mt-1">Account: {user.accountNumber}</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">{user.name}</h1>
+              <p className="text-sm md:text-base text-muted-foreground">{user.email}</p>
+              <p className="text-xs md:text-sm text-muted-foreground mt-1">Account: {user.accountNumber}</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full md:w-auto">
             <Button 
               onClick={() => { setTransactionType("deposit"); setIsTransactionOpen(true); }}
-              className="gap-2"
+              className="gap-2 flex-1 md:flex-none"
               variant="default"
             >
               <Plus className="h-4 w-4" />
-              Add Balance
+              <span className="hidden sm:inline">Add Balance</span>
+              <span className="sm:hidden">Deposit</span>
             </Button>
             <Button 
               onClick={() => { setTransactionType("withdrawal"); setIsTransactionOpen(true); }}
-              className="gap-2"
+              className="gap-2 flex-1 md:flex-none"
               variant="destructive"
             >
               <Minus className="h-4 w-4" />
-              Withdraw
+              <span className="hidden sm:inline">Withdraw</span>
+              <span className="sm:hidden">Withdraw</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3 mb-6">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3 mb-4 md:mb-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">Current Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+            <div className="text-2xl md:text-3xl font-bold">${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
 
@@ -148,10 +150,10 @@ const UserDetail = () => {
             {transactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between p-3 md:p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-full ${
+                <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+                  <div className={`p-2 rounded-full flex-shrink-0 ${
                     transaction.type === 'deposit' 
                       ? 'bg-success/10 text-success' 
                       : 'bg-destructive/10 text-destructive'
@@ -162,12 +164,12 @@ const UserDetail = () => {
                       <ArrowDownRight className="h-4 w-4" />
                     )}
                   </div>
-                  <div>
-                    <p className="font-medium">{transaction.description}</p>
-                    <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm md:text-base truncate">{transaction.description}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">{transaction.date}</p>
                   </div>
                 </div>
-                <div className={`font-semibold ${
+                <div className={`font-semibold text-sm md:text-base flex-shrink-0 ml-2 ${
                   transaction.type === 'deposit' ? 'text-success' : 'text-destructive'
                 }`}>
                   {transaction.type === 'deposit' ? '+' : '-'}$
