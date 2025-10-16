@@ -1,44 +1,43 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Plus, Minus } from "lucide-react";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { differenceInDays } from "date-fns";
-
-interface Transaction {
-  id: string;
-  type: "deposit" | "withdrawal";
-  amount: number;
-  date: string;
-  description: string;
-}
-
-const mockTransactions: Transaction[] = [
-  { id: "1", type: "deposit", amount: 1000, date: "2025-10-07", description: "Salary deposit" },
-  { id: "2", type: "withdrawal", amount: 250, date: "2025-10-06", description: "ATM withdrawal" },
-  { id: "3", type: "deposit", amount: 500, date: "2025-10-05", description: "Transfer received" },
-  { id: "4", type: "withdrawal", amount: 120.50, date: "2025-10-04", description: "Online purchase" },
-];
+import { getUserById, addTransaction, type User, type Transaction } from "@/lib/users";
+import { useToast } from "@/hooks/use-toast";
 
 const UserDetail = () => {
   const { id } = useParams();
-  const [balance, setBalance] = useState(5420.50);
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [user, setUser] = useState<User | null>(null);
   const [isTransactionOpen, setIsTransactionOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<"deposit" | "withdrawal">("deposit");
 
-  const user = {
-    id: id || "1",
-    name: "John Doe",
-    email: "john@example.com",
-    accountNumber: "ACC001",
-    status: "active",
-    savingAmount: 100,
-    savingFrequency: "daily" as "daily" | "weekly" | "monthly",
-    registrationDate: new Date("2025-10-01")
-  };
+  useEffect(() => {
+    if (id) {
+      const userData = getUserById(id);
+      if (userData) {
+        setUser(userData);
+      } else {
+        toast({
+          title: "User not found",
+          description: "The requested user could not be found.",
+          variant: "destructive",
+        });
+        navigate("/users");
+      }
+    }
+  }, [id, navigate, toast]);
+
+  if (!user) {
+    return null;
+  }
+
+  const transactions = user.transactions || [];
 
   const totalDeposits = transactions
     .filter(t => t.type === "deposit")
@@ -65,20 +64,23 @@ const UserDetail = () => {
   const remainingPayment = calculateRemainingPayment();
 
   const handleTransaction = (amount: number, description: string) => {
-    const newTransaction: Transaction = {
-      id: String(transactions.length + 1),
-      type: transactionType,
-      amount,
-      date: new Date().toISOString().split('T')[0],
-      description
-    };
+    if (user) {
+      addTransaction(user.id, {
+        type: transactionType,
+        amount,
+        date: new Date().toISOString().split('T')[0],
+        description,
+      });
 
-    setTransactions([newTransaction, ...transactions]);
-    
-    if (transactionType === "deposit") {
-      setBalance(balance + amount);
-    } else {
-      setBalance(balance - amount);
+      const updatedUser = getUserById(user.id);
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
+
+      toast({
+        title: `${transactionType === "deposit" ? "Deposit" : "Withdrawal"} successful`,
+        description: `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} has been ${transactionType === "deposit" ? "added to" : "withdrawn from"} the account.`,
+      });
     }
   };
 
@@ -132,7 +134,7 @@ const UserDetail = () => {
             <CardTitle className="text-sm font-medium text-muted-foreground">Current Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl md:text-3xl font-bold">${balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+            <div className="text-2xl md:text-3xl font-bold">${user.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
           </CardContent>
         </Card>
 

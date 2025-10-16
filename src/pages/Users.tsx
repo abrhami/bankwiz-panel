@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,31 +7,17 @@ import { UserPlus, Search, Eye, ArrowUpDown } from "lucide-react";
 import { AddUserDialog } from "@/components/AddUserDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  balance: number;
-  accountNumber: string;
-  status: "active" | "suspended";
-  savingAmount?: number;
-  savingFrequency?: "daily" | "weekly" | "monthly";
-  registrationDate?: Date;
-}
-
-const mockUsers: User[] = [
-  { id: "1", name: "John Doe", email: "john@example.com", balance: 5420.50, accountNumber: "ACC001", status: "active" },
-  { id: "2", name: "Jane Smith", email: "jane@example.com", balance: 12340.75, accountNumber: "ACC002", status: "active" },
-  { id: "3", name: "Robert Johnson", email: "robert@example.com", balance: 890.25, accountNumber: "ACC003", status: "active" },
-  { id: "4", name: "Emily Davis", email: "emily@example.com", balance: 23450.00, accountNumber: "ACC004", status: "active" },
-];
+import { getUsers, addUser, type User } from "@/lib/users";
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "balance" | "account">("name");
+
+  useEffect(() => {
+    setUsers(getUsers());
+  }, []);
   const isMobile = useIsMobile();
 
   const filteredUsers = users
@@ -49,18 +35,14 @@ const Users = () => {
     });
 
   const handleAddUser = (userData: { name: string; savingAmount: number; savingFrequency: "daily" | "weekly" | "monthly"; registrationDate: Date; initialBalance: number }) => {
-    const newUser: User = {
-      id: String(users.length + 1),
+    addUser({
       name: userData.name,
-      email: `user${users.length + 1}@example.com`,
       balance: userData.initialBalance,
-      accountNumber: `ACC${String(users.length + 1).padStart(3, '0')}`,
-      status: "active",
       savingAmount: userData.savingAmount,
       savingFrequency: userData.savingFrequency,
-      registrationDate: userData.registrationDate
-    };
-    setUsers([...users, newUser]);
+      registrationDate: userData.registrationDate,
+    });
+    setUsers(getUsers());
   };
 
   return (
