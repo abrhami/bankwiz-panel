@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, ArrowUpRight, ArrowDownRight, Plus, Minus } from "lucide-react";
 import { TransactionDialog } from "@/components/TransactionDialog";
+import { differenceInDays } from "date-fns";
 
 interface Transaction {
   id: string;
@@ -33,7 +34,10 @@ const UserDetail = () => {
     name: "John Doe",
     email: "john@example.com",
     accountNumber: "ACC001",
-    status: "active"
+    status: "active",
+    savingAmount: 100,
+    savingFrequency: "daily" as "daily" | "weekly" | "monthly",
+    registrationDate: new Date("2025-10-01")
   };
 
   const totalDeposits = transactions
@@ -43,6 +47,22 @@ const UserDetail = () => {
   const totalWithdrawals = transactions
     .filter(t => t.type === "withdrawal")
     .reduce((sum, t) => sum + t.amount, 0);
+
+  const calculateRemainingPayment = () => {
+    const today = new Date();
+    const daysDiff = differenceInDays(today, user.registrationDate);
+    
+    let divisor = 1;
+    if (user.savingFrequency === "weekly") divisor = 7;
+    if (user.savingFrequency === "monthly") divisor = 30;
+    
+    const expectedSavings = (daysDiff / divisor) * user.savingAmount;
+    const remaining = expectedSavings - totalDeposits;
+    
+    return remaining;
+  };
+
+  const remainingPayment = calculateRemainingPayment();
 
   const handleTransaction = (amount: number, description: string) => {
     const newTransaction: Transaction = {
@@ -106,7 +126,7 @@ const UserDetail = () => {
         </div>
       </div>
 
-      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3 mb-4 md:mb-6">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-4 md:mb-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">Current Balance</CardTitle>
@@ -137,6 +157,20 @@ const UserDetail = () => {
             <div className="text-2xl font-bold text-destructive">
               -${totalWithdrawals.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Remaining Payment</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${remainingPayment > 0 ? 'text-destructive' : 'text-success'}`}>
+              {remainingPayment > 0 ? '-' : '+'}${Math.abs(remainingPayment).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {user.savingAmount.toLocaleString()} {user.savingFrequency}
+            </p>
           </CardContent>
         </Card>
       </div>

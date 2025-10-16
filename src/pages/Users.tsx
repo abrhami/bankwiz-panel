@@ -15,6 +15,9 @@ interface User {
   balance: number;
   accountNumber: string;
   status: "active" | "suspended";
+  savingAmount?: number;
+  savingFrequency?: "daily" | "weekly" | "monthly";
+  registrationDate?: Date;
 }
 
 const mockUsers: User[] = [
@@ -45,14 +48,17 @@ const Users = () => {
       return 0;
     });
 
-  const handleAddUser = (userData: { name: string; email: string; initialBalance: number }) => {
+  const handleAddUser = (userData: { name: string; savingAmount: number; savingFrequency: "daily" | "weekly" | "monthly"; registrationDate: Date; initialBalance: number }) => {
     const newUser: User = {
       id: String(users.length + 1),
       name: userData.name,
-      email: userData.email,
+      email: `user${users.length + 1}@example.com`,
       balance: userData.initialBalance,
       accountNumber: `ACC${String(users.length + 1).padStart(3, '0')}`,
-      status: "active"
+      status: "active",
+      savingAmount: userData.savingAmount,
+      savingFrequency: userData.savingFrequency,
+      registrationDate: userData.registrationDate
     };
     setUsers([...users, newUser]);
   };

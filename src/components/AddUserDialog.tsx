@@ -9,27 +9,29 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AddUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddUser: (userData: { name: string; email: string; initialBalance: number }) => void;
+  onAddUser: (userData: { name: string; savingAmount: number; savingFrequency: "daily" | "weekly" | "monthly"; registrationDate: Date; initialBalance: number }) => void;
 }
 
 export const AddUserDialog = ({ open, onOpenChange, onAddUser }: AddUserDialogProps) => {
   const [name, setName] = useState("");
   const [fatherName, setFatherName] = useState("");
-  const [email, setEmail] = useState("");
   const [idNumber, setIdNumber] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [registrationDate, setRegistrationDate] = useState<Date>();
+  const [savingAmount, setSavingAmount] = useState("");
+  const [savingFrequency, setSavingFrequency] = useState<"daily" | "weekly" | "monthly">("daily");
   const [initialBalance, setInitialBalance] = useState("");
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !fatherName || !email || !idNumber || !photo || !registrationDate || !initialBalance) {
+    if (!name || !fatherName || !idNumber || !photo || !registrationDate || !savingAmount || !initialBalance) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -40,7 +42,9 @@ export const AddUserDialog = ({ open, onOpenChange, onAddUser }: AddUserDialogPr
 
     onAddUser({
       name,
-      email,
+      savingAmount: parseFloat(savingAmount),
+      savingFrequency,
+      registrationDate,
       initialBalance: parseFloat(initialBalance)
     });
 
@@ -51,10 +55,11 @@ export const AddUserDialog = ({ open, onOpenChange, onAddUser }: AddUserDialogPr
 
     setName("");
     setFatherName("");
-    setEmail("");
     setIdNumber("");
     setPhoto(null);
     setRegistrationDate(undefined);
+    setSavingAmount("");
+    setSavingFrequency("daily");
     setInitialBalance("");
     onOpenChange(false);
   };
@@ -82,16 +87,6 @@ export const AddUserDialog = ({ open, onOpenChange, onAddUser }: AddUserDialogPr
               value={fatherName}
               onChange={(e) => setFatherName(e.target.value)}
               placeholder="Kebede Lemma"
-            />
-          </div>
-          <div>
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="abebe@example.com"
             />
           </div>
           <div>
@@ -149,6 +144,30 @@ export const AddUserDialog = ({ open, onOpenChange, onAddUser }: AddUserDialogPr
                 />
               </PopoverContent>
             </Popover>
+          </div>
+          <div>
+            <Label htmlFor="savingAmount">Saving Amount</Label>
+            <Input
+              id="savingAmount"
+              type="number"
+              step="0.01"
+              value={savingAmount}
+              onChange={(e) => setSavingAmount(e.target.value)}
+              placeholder="0.00"
+            />
+          </div>
+          <div>
+            <Label htmlFor="frequency">Saving Frequency</Label>
+            <Select value={savingFrequency} onValueChange={(value: any) => setSavingFrequency(value)}>
+              <SelectTrigger id="frequency">
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Label htmlFor="balance">Initial Balance</Label>
